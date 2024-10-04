@@ -1,0 +1,233 @@
+C51 COMPILER V9.60.7.0   MAIN                                                              09/23/2024 16:17:50 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\main
+                    -.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          
+   2          /*
+   3          Task:
+   4              Interrupt-Based PWM Control for SG90 Servo Motor on 8051 Microcontroller
+   5          */
+   6          
+   7          
+   8          #include <reg51.h>
+   9          
+  10          // Defining servo motor control pins
+  11          sbit r1 = P2^4;
+  12          sbit r2 = P2^3;
+  13          sbit r3 = P2^2;
+  14          
+  15          // Defining output pin to the motor
+  16          sbit output = P1^0;     
+  17          
+  18          // Defining control pins for LCD
+  19          sbit rs = P2^6;     // Register select
+  20          sbit rw = P2^5;     // Read/Write
+  21          sbit en = P2^7;     // Enable
+  22          
+  23          // Defining buttons for user input
+  24          sbit btn = P3^0;    // Button to increase angle
+  25          sbit btn1 = P3^1;   // Button to decrease angle
+  26          
+  27          // Function declarations
+  28          void values_on_ssd(void);
+  29          void display_num_7seg(unsigned char num);
+  30          void lcd_data(unsigned char item);
+  31          void lcd_cmd(unsigned char item);
+  32          void lcd_data_int(int time_val);
+  33          void lcd_DisplayString(char *string_ptr);
+  34          void delay(unsigned int msec);
+  35          void timer(int msec);
+  36          void shape(void);
+  37          
+  38          // Variables for 7-segment display control
+  39          unsigned char values[4];
+  40          unsigned char index = 0;
+  41          unsigned int select[] = {0x0C, 0x08, 0x04, 0x00}; // Digit selection bits
+  42          unsigned int message[] = {0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x67};  // 7-segment displ
+             -ay codes for 0-9
+  43          
+  44          // Function to create a custom "degree" shape on the LCD
+  45          void shape() {      
+  46   1        lcd_cmd(0xC4);           // Move cursor to a specific LCD location
+  47   1        lcd_data('D');
+  48   1        lcd_data('E');
+  49   1        lcd_data('G');
+  50   1        lcd_data('R');
+  51   1        lcd_data('E');
+  52   1        lcd_data('E');
+  53   1      }
+C51 COMPILER V9.60.7.0   MAIN                                                              09/23/2024 16:17:50 PAGE 2   
+
+  54          
+  55          // Delay function in milliseconds
+  56          void delay(unsigned int msec) {
+  57   1        int i, j;
+  58   1        for(i = 0; i < msec; i++)
+  59   1          for(j = 0; j < 1275; j++);  // Inner loop provides delay for 1 ms
+  60   1      }
+  61          
+  62          // Timer function used to delay for "msec" milliseconds
+  63          void timer(int msec) {   
+  64   1        int i;
+  65   1        TR1 = 1;              // Start Timer 1
+  66   1        for(i = 0; i < msec; i++) {
+  67   2          while(TF1 == 0);   // Wait until Timer 1 overflows
+  68   2          TF1 = 0;          // Clear the overflow flag
+  69   2        }
+  70   1        TR1 = 0;              // Stop Timer 1
+  71   1      }
+  72          
+  73          void main() {
+  74   1        int i, p;
+  75   1        char count;
+  76   1      
+  77   1        // Initialize LCD
+  78   1        lcd_cmd(0x38);        // Set 2-line, 5x7 matrix
+  79   1        lcd_cmd(0x0E);        // Display on, cursor blinking
+  80   1        lcd_cmd(0x01);        // Clear display
+  81   1        
+  82   1        // Initialize Timer 1 in Mode 2 (8-bit auto-reload)
+  83   1        TMOD = 0x20;
+  84   1        TH1 = -23;            // Set baud rate timer value for servo
+  85   1        
+  86   1        output = 0;           // Initialize motor output to 0
+  87   1        count = 21;           // Start with a default servo angle
+  88   1      
+  89   1        lcd_DisplayString(" SERVO ANGLE ");  // Display string on LCD
+  90   1        shape();                            // Create degree sign
+  91   1      
+  92   1        while(1) {
+  93   2          // If count exceeds maximum, reset to 21
+  94   2          if(count >= 104)
+  95   2            count = 21;
+  96   2          else {
+  97   3            // Button press logic to increase or decrease angle
+  98   3            if(btn == 0) {
+  99   4              count++;   // Increment angle
+ 100   4            }
+ 101   3            if(btn1 == 0) {
+ 102   4              count--;   // Decrement angle
+ 103   4            }
+ 104   3          }
+ 105   2      
+ 106   2          // Calculate angle in degrees
+ 107   2          lcd_cmd(0xC0);               // Move to next line on LCD
+ 108   2          p = 2.5 * (count - 21);      // Convert count to degrees
+ 109   2          lcd_data_int(p);             // Display the angle in degrees
+ 110   2      
+ 111   2          // Loop to generate PWM signal for the servo motor
+ 112   2          for(i = 0; i < 50; i++) {
+ 113   3            output = 1;              // Set output pin high
+ 114   3            timer(count);            // Generate high pulse proportional to angle
+ 115   3            output = 0;              // Set output pin low
+C51 COMPILER V9.60.7.0   MAIN                                                              09/23/2024 16:17:50 PAGE 3   
+
+ 116   3            timer(360);              // Generate low pulse (complete 20ms period)
+ 117   3      
+ 118   3            display_num_7seg(p);     // Display angle on 7-segment display
+ 119   3            if(p > 180)              // Restrict angle to 180 degrees
+ 120   3              p = 0;
+ 121   3      
+ 122   3            values_on_ssd();          // Update the 7-segment display
+ 123   3          }
+ 124   2        }
+ 125   1      }
+ 126          
+ 127          // Function to display an integer on the LCD
+ 128          void lcd_data_int(int time_val) {   
+ 129   1        int a;
+ 130   1        
+ 131   1        // Display hundreds place
+ 132   1        a = time_val / 100;
+ 133   1        lcd_data(a + 48);  // Convert integer to character and display
+ 134   1        time_val = time_val % 100;
+ 135   1      
+ 136   1        // Display tens place
+ 137   1        a = time_val / 10;
+ 138   1        lcd_data(a + 48);
+ 139   1      
+ 140   1        // Display ones place
+ 141   1        a = time_val % 10;
+ 142   1        lcd_data(a + 48);
+ 143   1      }
+ 144          
+ 145          // Function to send a command to the LCD
+ 146          void lcd_cmd(unsigned char item) {    
+ 147   1        P0 = item;         // Place command on data bus
+ 148   1        rs = 0;            // Register select = 0 for command
+ 149   1        rw = 0;            // Write mode
+ 150   1        en = 1;            // Enable LCD
+ 151   1        delay(1);          // Short delay for command to execute
+ 152   1        en = 0;
+ 153   1      }
+ 154          
+ 155          // Function to send data to the LCD
+ 156          void lcd_data(unsigned char item) {   
+ 157   1        P0 = item;         // Place data on data bus
+ 158   1        rs = 1;            // Register select = 1 for data
+ 159   1        rw = 0;            // Write mode
+ 160   1        en = 1;            // Enable LCD
+ 161   1        delay(1);          // Short delay for data to execute
+ 162   1        en = 0;
+ 163   1      }
+ 164          
+ 165          // Function to display a string on the LCD
+ 166          void lcd_DisplayString(char *string_ptr) {
+ 167   1        while(*string_ptr) {
+ 168   2          lcd_data(*string_ptr++);  // Send characters one by one
+ 169   2        }
+ 170   1      }
+ 171          
+ 172          // Function to display a number on a 4-digit 7-segment display
+ 173          void display_num_7seg(unsigned char num) {
+ 174   1        int i = 3;
+ 175   1        while(num != 0) {
+ 176   2          values[i] = num % 10;  // Extract digits one by one
+ 177   2          num = num / 10;
+C51 COMPILER V9.60.7.0   MAIN                                                              09/23/2024 16:17:50 PAGE 4   
+
+ 178   2          i--;
+ 179   2        }
+ 180   1      }
+ 181          
+ 182          // Function to update the 7-segment display
+ 183          void values_on_ssd(void) {
+ 184   1        switch(values[index]) {
+ 185   2          case 0: P2 = select[index]; P0 = message[0]; break;
+ 186   2          case 1: P2 = select[index]; P0 = message[1]; break;
+ 187   2          case 2: P2 = select[index]; P0 = message[2]; break;
+ 188   2          case 3: P2 = select[index]; P0 = message[3]; break;
+ 189   2          case 4: P2 = select[index]; P0 = message[4]; break;
+ 190   2          case 5: P2 = select[index]; P0 = message[5]; break;
+ 191   2          case 6: P2 = select[index]; P0 = message[6]; break;
+ 192   2          case 7: P2 = select[index]; P0 = message[7]; break;
+ 193   2          case 8: P2 = select[index]; P0 = message[8]; break;
+ 194   2          case 9: P2 = select[index]; P0 = message[9]; break;
+ 195   2          default: break;
+ 196   2        }
+ 197   1        
+ 198   1        index += 1;          // Move to the next digit
+ 199   1        if(index > 3) {      // Reset index if all digits have been displayed
+ 200   2          index = 0;
+ 201   2        }
+ 202   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    659    ----
+   CONSTANT SIZE    =     14    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     33      10
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

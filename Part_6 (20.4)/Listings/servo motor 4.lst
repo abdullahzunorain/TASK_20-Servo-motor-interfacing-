@@ -1,0 +1,151 @@
+C51 COMPILER V9.60.7.0   SERVO_MOTOR_4                                                     09/18/2024 10:14:24 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE SERVO_MOTOR_4
+OBJECT MODULE PLACED IN .\Objects\servo motor 4.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE servo motor 4.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\List
+                    -ings\servo motor 4.lst) TABS(2) OBJECT(.\Objects\servo motor 4.obj)
+
+line level    source
+
+   1          #include <reg51.h>
+   2          #include "LCD.h"
+   3          #include "string.h"
+   4          #include "stdio.h"
+   5          
+   6          sbit motor_pin =P2^0;
+   7          
+   8          sbit k1=P3^1;
+   9          sbit k2=P3^0;
+  10          unsigned int servo_position=0;
+  11          unsigned int on_pulse, off_pulse;
+  12          float dutycycle;
+  13          unsigned char degree_symbol[8]= {0x06,0x09,0x06, 0x00, 0x00, 0x00, 0x00, 0x00};
+  14          
+  15          void timerinterrupt () interrupt 1
+  16          {
+  17   1        motor_pin = ~ motor_pin;
+  18   1        if(motor_pin)
+  19   1        {
+  20   2          TH0= on_pulse >> 8;
+  21   2          TL0= on_pulse ;
+  22   2        }
+  23   1        else
+  24   1        {
+  25   2          TH0= off_pulse >> 8 ;
+  26   2          TL0= off_pulse ;
+  27   2        }
+  28   1      }
+  29          
+  30          
+  31          
+  32          
+  33          
+  34          void timer_init()
+  35          {
+  36   1        TMOD=0x01;
+  37   1        TH0=0xB7;
+  38   1        TL0=0xFD;
+  39   1        TR0=1;
+  40   1        EA=1;
+  41   1        ET0=1;
+  42   1        
+  43   1      }
+  44          
+  45          
+  46          void set_duty_cycle (float duty_cycle)
+  47          {
+  48   1        unsigned int period;
+  49   1        period = 65535 - 0xB7FD;
+  50   1        on_pulse = ((period / 100.0)*duty_cycle);
+  51   1        off_pulse = period - on_pulse ;
+  52   1        
+  53   1        on_pulse = 65535 - on_pulse;
+  54   1        off_pulse = 65535- off_pulse;
+C51 COMPILER V9.60.7.0   SERVO_MOTOR_4                                                     09/18/2024 10:14:24 PAGE 2   
+
+  55   1        
+  56   1      }
+  57          void lcd_disp_num ( unsigned int number, unsigned int width)
+  58          {
+  59   1        char buffer [8];
+  60   1        sprintf (buffer , "%*d", width, number);
+  61   1        lcd_string(buffer);
+  62   1      }
+  63          void lcd_custom_char(unsigned char loc, unsigned char *msg)
+  64          {
+  65   1        unsigned char i;
+  66   1        if(loc<8)
+  67   1        {
+  68   2          lcd_command(0x40 +(loc*8));
+  69   2          for(i=0; i<8; i++)
+  70   2          {
+  71   3            lcd_char(msg[i]);
+  72   3          }
+  73   2          lcd_command(0x80);
+  74   2        }
+  75   1      }
+  76          void main ()
+  77          {
+  78   1        lcd_init ();
+  79   1        timer_init();
+  80   1        lcd_set_cursor(0,1);
+  81   1        lcd_string("Motor Angle");
+  82   1        motor_pin=0;
+  83   1        while(1)
+  84   1        {
+  85   2          if(k1 == 0)
+  86   2          {
+  87   3            delay(200);
+  88   3          
+  89   3          if(servo_position<180)
+  90   3          {
+  91   4            servo_position += 45;
+  92   4            lcd_set_cursor(2,6);
+  93   4            lcd_disp_num(servo_position,3);
+  94   4            lcd_custom_char(1, degree_symbol);
+  95   4            lcd_set_cursor(2, 9);
+  96   4            lcd_char(1);
+  97   4            delay(500);
+  98   4            
+  99   4          }
+ 100   3          while(k1==0);
+ 101   3          
+ 102   3        }
+ 103   2          if(k2==0)
+ 104   2          {
+ 105   3            delay(200);
+ 106   3            if(servo_position >0)
+ 107   3            {
+ 108   4              servo_position -=45;
+ 109   4              lcd_set_cursor(2,6);
+ 110   4              lcd_disp_num(servo_position, 3);
+ 111   4              lcd_custom_char(1, degree_symbol);
+ 112   4              lcd_set_cursor(2,9);
+ 113   4              lcd_char(1);
+ 114   4              delay(500);
+ 115   4              
+ 116   4            }
+C51 COMPILER V9.60.7.0   SERVO_MOTOR_4                                                     09/18/2024 10:14:24 PAGE 3   
+
+ 117   3            while(k2==0);
+ 118   3          }
+ 119   2          dutycycle=((servo_position +45)/180.0)*10;
+ 120   2          set_duty_cycle(dutycycle);
+ 121   2          delay(500);
+ 122   2        }
+ 123   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    456    ----
+   CONSTANT SIZE    =     16    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     18      18
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

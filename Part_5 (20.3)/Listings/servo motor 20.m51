@@ -1,0 +1,95 @@
+BL51 BANKED LINKER/LOCATER V6.22.4.0                                                    09/23/2024  16:39:41  PAGE 1
+
+
+BL51 BANKED LINKER/LOCATER V6.22.4.0, INVOKED BY:
+C:\KEIL_V5\C51\BIN\BL51.EXE .\Objects\servo motor.obj TO .\Objects\servo motor 20.3 PRINT (.\Listings\servo motor 20.m51
+>> ) RAMSIZE (256)
+
+
+MEMORY MODEL: SMALL
+
+
+INPUT MODULES INCLUDED:
+  .\Objects\servo motor.obj (SERVO_MOTOR)
+  C:\KEIL_V5\C51\LIB\C51S.LIB (?C_STARTUP)
+
+
+LINK MAP OF MODULE:  .\Objects\servo motor 20.3 (SERVO_MOTOR)
+
+
+            TYPE    BASE      LENGTH    RELOCATION   SEGMENT NAME
+            -----------------------------------------------------
+
+            * * * * * * *   D A T A   M E M O R Y   * * * * * * *
+            REG     0000H     0008H     ABSOLUTE     "REG BANK 0"
+            DATA    0008H     0002H     UNIT         ?DT?SERVO_MOTOR
+            IDATA   000AH     0001H     UNIT         ?STACK
+
+            * * * * * * *   C O D E   M E M O R Y   * * * * * * *
+            CODE    0000H     0003H     ABSOLUTE     
+            CODE    0003H     003AH     UNIT         ?PR?MAIN?SERVO_MOTOR
+            CODE    003DH     000CH     UNIT         ?C_C51STARTUP
+            CODE    0049H     0009H     UNIT         ?PR?DELAY?SERVO_MOTOR
+
+
+
+OVERLAY MAP OF MODULE:   .\Objects\servo motor 20.3 (SERVO_MOTOR)
+
+
+SEGMENT
+  +--> CALLED SEGMENT
+---------------------
+?C_C51STARTUP
+  +--> ?PR?MAIN?SERVO_MOTOR
+
+?PR?MAIN?SERVO_MOTOR
+  +--> ?PR?DELAY?SERVO_MOTOR
+
+
+
+SYMBOL TABLE OF MODULE:  .\Objects\servo motor 20.3 (SERVO_MOTOR)
+
+  VALUE           TYPE          NAME
+  ----------------------------------
+
+  -------         MODULE        SERVO_MOTOR
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  D:00A0H         PUBLIC        P2
+  C:0049H         PUBLIC        delay
+  C:0003H         PUBLIC        main
+  D:0089H         PUBLIC        TMOD
+  D:008CH         PUBLIC        TH0
+BL51 BANKED LINKER/LOCATER V6.22.4.0                                                  09/23/2024  16:39:41  PAGE 2
+
+
+  B:0088H.4       PUBLIC        TR0
+  B:00A0H.0       PUBLIC        motor_pin
+  D:0008H         PUBLIC        i
+  -------         PROC          DELAY
+  C:0049H         LINE#         46
+  C:0049H         LINE#         47
+  C:0049H         LINE#         48
+  C:004CH         LINE#         49
+  C:004FH         LINE#         50
+  C:0051H         LINE#         51
+  -------         ENDPROC       DELAY
+  -------         PROC          MAIN
+  C:0003H         LINE#         53
+  C:0003H         LINE#         54
+  C:0003H         LINE#         55
+  C:0003H         LINE#         56
+  C:0003H         LINE#         58
+  C:0005H         LINE#         60
+  C:000AH         LINE#         61
+  C:000AH         LINE#         62
+  C:000DH         LINE#         63
+  C:001EH         LINE#         64
+  C:0020H         LINE#         66
+  C:0030H         LINE#         67
+  C:0030H         LINE#         68
+  C:0033H         LINE#         69
+  -------         ENDPROC       MAIN
+  -------         ENDMOD        SERVO_MOTOR
+
+Program Size: data=11.0 xdata=0 code=82
+LINK/LOCATE RUN COMPLETE.  0 WARNING(S),  0 ERROR(S)

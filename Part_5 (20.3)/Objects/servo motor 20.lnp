@@ -1,0 +1,3 @@
+".\Objects\servo motor.obj" 
+TO ".\Objects\servo motor 20.3" 
+PRINT(".\Listings\servo motor 20.m51") RAMSIZE(256) 
