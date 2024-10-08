@@ -1,5 +1,7 @@
 ## Task 20: Interfacing a Servo Motor with the STC89C52 Microcontroller
 
+![](servo_motor.jpg)
+
 This task involves interfacing an SG90 servo motor with the STC89C52 microcontroller. The servo motor requires a precise PWM signal to control its movement from 0 to 180 degrees. Follow the steps below to generate the required PWM signals and control the servo motor.
 
 ![](angle_degrees.jpg)
