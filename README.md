@@ -2,6 +2,8 @@
 
 This task involves interfacing an SG90 servo motor with the STC89C52 microcontroller. The servo motor requires a precise PWM signal to control its movement from 0 to 180 degrees. Follow the steps below to generate the required PWM signals and control the servo motor.
 
+![](angle_degrees.jpg)
+
 #### Step 1: Learn the Basics of Servo Motor Operation
 - **Watch the video**: [Servo Motor Working](https://www.youtube.com/watch?v=1WnGv-DPexc&ab_channel=TheEngineeringMindset) to understand how a servo motor operates.
 
